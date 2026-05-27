@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SecureVault — SQL Injection Defense System</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+
+<!-- Animated background grid -->
+<div class="grid-bg"></div>
+<div class="scan-line"></div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <span class="logo-icon">⬡</span>
+    <span class="logo-text">SECURE<span class="accent">VAULT</span></span>
+  </div>
+  <div class="header-status">
+    <span class="status-dot active"></span>
+    <span class="status-text">SYSTEM ONLINE</span>
+    <span class="sep">|</span>
+    <span id="headerThreatCount">0 THREATS BLOCKED</span>
+  </div>
+  <nav class="nav">
+    <button class="nav-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="nav-btn" data-tab="login">Access Portal</button>
+    <button class="nav-btn" data-tab="register">Register</button>
+    <button class="nav-btn" data-tab="query">Query Lab</button>
+    <button class="nav-btn" data-tab="logs">Audit Logs</button>
+  </nav>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ══════════════════ DASHBOARD ══════════════════ -->
+  <section class="tab active" id="tab-dashboard">
+    <div class="section-title">
+      <span class="tag">01</span>
+      <h2>Security Dashboard</h2>
+      <p>Real-time threat monitoring and system health</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card green">
+        <div class="stat-icon">🔐</div>
+        <div class="stat-val" id="stat-encrypted">0</div>
+        <div class="stat-label">Encrypted Records</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-icon">🚨</div>
+        <div class="stat-val" id="stat-blocked">0</div>
+        <div class="stat-label">SQL Attacks Blocked</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-icon">🔑</div>
+        <div class="stat-val" id="stat-tokens">0</div>
+        <div class="stat-label">Capability Tokens Issued</div>
+      </div>
+      <div class="stat-card yellow">
+        <div class="stat-icon">🛡️</div>
+        <div class="stat-val" id="stat-queries">0</div>
+        <div class="stat-label">Safe Queries Executed</div>
+      </div>
+    </div>
+
+    <!-- Architecture visual -->
+    <div class="arch-panel">
+      <div class="arch-title">Double-Layer Security Architecture</div>
+      <div class="arch-diagram">
+        <div class="arch-layer layer-1">
+          <div class="arch-node">
+            <div class="arch-node-icon">👤</div>
+            <div>User Input</div>
+          </div>
+        </div>
+        <div class="arch-arrow">
+          <div class="arrow-line"></div>
+          <div class="layer-badge">LAYER 1: Pattern Detection + Sanitization</div>
+        </div>
+        <div class="arch-layer layer-2">
+          <div class="arch-node">
+            <div class="arch-node-icon">🔍</div>
+            <div>Input Scanner</div>
+          </div>
+          <div class="arch-node">
+            <div class="arch-node-icon">🧹</div>
+            <div>Sanitizer</div>
+          </div>
+        </div>
+        <div class="arch-arrow">
+          <div class="arrow-line"></div>
+          <div class="layer-badge">LAYER 2: Parameterized Query + AES-256</div>
+        </div>
+        <div class="arch-layer layer-3">
+          <div class="arch-node">
+            <div class="arch-node-icon">⚙️</div>
+            <div>Param Engine</div>
+          </div>
+          <div class="arch-node">
+            <div class="arch-node-icon">🔒</div>
+            <div>AES-256</div>
+          </div>
+        </div>
+        <div class="arch-arrow">
+          <div class="arrow-line"></div>
+          <div class="layer-badge">Capability Token Validation</div>
+        </div>
+        <div class="arch-layer layer-4">
+          <div class="arch-node">
+            <div class="arch-node-icon">🗄️</div>
+            <div>Secure DB</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Known injection patterns -->
+    <div class="patterns-panel">
+      <div class="panel-header">
+        <span>Known SQL Injection Patterns</span>
+        <span class="badge red">ACTIVE DEFENSE</span>
+      </div>
+      <div class="patterns-grid" id="patternGrid"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ LOGIN ══════════════════ -->
+  <section class="tab" id="tab-login">
+    <div class="section-title">
+      <span class="tag">02</span>
+      <h2>Access Portal</h2>
+      <p>Authentication with double-layer SQL injection defense</p>
+    </div>
+
+    <div class="form-container">
+      <div class="form-card">
+        <div class="form-header">
+          <span class="form-icon">🔐</span>
+          <h3>Secure Login</h3>
+          <p>All inputs are scanned, sanitized, and parameterized</p>
+        </div>
+
+        <div class="field-group">
+          <label>Username</label>
+          <div class="input-wrap">
+            <input type="text" id="loginUser" placeholder="Enter username..." autocomplete="off"/>
+            <div class="shield-indicator" id="loginUserShield">🛡️</div>
+          </div>
+          <div class="threat-bar" id="loginUserBar"></div>
+        </div>
+
+        <div class="field-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <input type="password" id="loginPass" placeholder="Enter password..."/>
+            <div class="shield-indicator" id="loginPassShield">🛡️</div>
+          </div>
+          <div class="threat-bar" id="loginPassBar"></div>
+        </div>
+
+        <div class="field-group">
+          <label>Capability Token <span class="optional">(optional — elevates access)</span></label>
+          <div class="input-wrap">
+            <input type="text" id="loginToken" placeholder="Paste capability token..."/>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="handleLogin()">
+          <span>AUTHENTICATE</span>
+          <span class="btn-icon">→</span>
+        </button>
+
+        <div class="try-attacks">
+          <div class="try-label">⚡ Test Injection Attempts:</div>
+          <div class="try-btns">
+            <button class="try-btn" onclick="injectTest(&quot;loginUser&quot;, &quot;' OR '1'='1&quot;)">Classic OR</button>
+            <button class="try-btn" onclick="injectTest(&quot;loginUser&quot;, &quot;admin'--&quot;)">Comment</button>
+            <button class="try-btn" onclick="injectTest(&quot;loginUser&quot;, &quot;' UNION SELECT * FROM users--&quot;)">UNION</button>
+            <button class="try-btn" onclick="injectTest(&quot;loginUser&quot;, &quot;'; DROP TABLE users;--&quot;)">DROP TABLE</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-info">
+        <div class="info-panel">
+          <div class="info-title">How Login Is Secured</div>
+          <div class="info-step">
+            <div class="step-num">01</div>
+            <div>
+              <strong>Layer 1 — Regex Pattern Scan</strong>
+              <p>Input is checked against 20+ known SQL injection patterns including UNION, OR bypass, comment injection, and stacked queries.</p>
+            </div>
+          </div>
+          <div class="info-step">
+            <div class="step-num">02</div>
+            <div>
+              <strong>Layer 2 — Parameterized Query</strong>
+              <p>Even after sanitization, credentials are treated as data only — never concatenated into query strings.</p>
+            </div>
+          </div>
+          <div class="info-step">
+            <div class="step-num">03</div>
+            <div>
+              <strong>AES-256 Password Storage</strong>
+              <p>Passwords are hashed client-side and stored AES-256 encrypted in the secure vault. Raw passwords never persist.</p>
+            </div>
+          </div>
+          <div class="info-step">
+            <div class="step-num">04</div>
+            <div>
+              <strong>Capability Token</strong>
+              <p>Optional JWT-style token grants elevated or restricted access scopes, preventing privilege escalation.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="loginResult" class="result-panel hidden"></div>
+  </section>
+
+  <!-- ══════════════════ REGISTER ══════════════════ -->
+  <section class="tab" id="tab-register">
+    <div class="section-title">
+      <span class="tag">03</span>
+      <h2>User Registration</h2>
+      <p>Secure onboarding with AES-256 credential encryption</p>
+    </div>
+
+    <div class="form-container">
+      <div class="form-card">
+        <div class="form-header">
+          <span class="form-icon">👤</span>
+          <h3>Create Account</h3>
+          <p>Credentials are encrypted before storage — never stored in plain text</p>
+        </div>
+
+        <div class="field-group">
+          <label>Full Name</label>
+          <div class="input-wrap">
+            <input type="text" id="regName" placeholder="John Doe" autocomplete="off"/>
+            <div class="shield-indicator" id="regNameShield">🛡️</div>
+          </div>
+          <div class="threat-bar" id="regNameBar"></div>
+        </div>
+
+        <div class="field-group">
+          <label>Email</label>
+          <div class="input-wrap">
+            <input type="email" id="regEmail" placeholder="user@domain.com"/>
+            <div class="shield-indicator" id="regEmailShield">🛡️</div>
+          </div>
+          <div class="threat-bar" id="regEmailBar"></div>
+        </div>
+
+        <div class="field-group">
+          <label>Username</label>
+          <div class="input-wrap">
+            <input type="text" id="regUser" placeholder="Choose a username" autocomplete="off"/>
+            <div class="shield-indicator" id="regUserShield">🛡️</div>
+          </div>
+          <div class="threat-bar" id="regUserBar"></div>
+        </div>
+
+        <div class="field-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <input type="password" id="regPass" placeholder="Strong password"/>
+          </div>
+          <div class="strength-bar">
+            <div id="strengthFill" class="strength-fill"></div>
+          </div>
+          <div id="strengthLabel" class="strength-label">—</div>
+        </div>
+
+        <button class="btn-primary" onclick="handleRegister()">
+          <span>CREATE SECURE ACCOUNT</span>
+          <span class="btn-icon">→</span>
+        </button>
+      </div>
+
+      <div class="form-info">
+        <div class="info-panel">
+          <div class="info-title">Encryption Process</div>
+          <div class="crypto-flow">
+            <div class="crypto-step">
+              <div class="cs-icon">📝</div>
+              <div class="cs-text">Raw Password</div>
+            </div>
+            <div class="cs-arrow">↓</div>
+            <div class="crypto-step">
+              <div class="cs-icon">🔀</div>
+              <div class="cs-text">SHA-256 Hash</div>
+            </div>
+            <div class="cs-arrow">↓</div>
+            <div class="crypto-step">
+              <div class="cs-icon">🔒</div>
+              <div class="cs-text">AES-256 Encrypt</div>
+            </div>
+            <div class="cs-arrow">↓</div>
+            <div class="crypto-step">
+              <div class="cs-icon">🗄️</div>
+              <div class="cs-text">Stored in Vault</div>
+            </div>
+          </div>
+          <div id="encryptionDemo" class="enc-demo">
+            <div class="enc-title">Live Encryption Preview</div>
+            <div class="enc-row">
+              <span class="enc-label">Input:</span>
+              <span class="enc-val" id="encInput">—</span>
+            </div>
+            <div class="enc-row">
+              <span class="enc-label">SHA-256:</span>
+              <span class="enc-val mono" id="encHash">—</span>
+            </div>
+            <div class="enc-row">
+              <span class="enc-label">AES-256:</span>
+              <span class="enc-val mono" id="encAES">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="regResult" class="result-panel hidden"></div>
+  </section>
+
+  <!-- ══════════════════ QUERY LAB ══════════════════ -->
+  <section class="tab" id="tab-query">
+    <div class="section-title">
+      <span class="tag">04</span>
+      <h2>SQL Query Lab</h2>
+      <p>Test injection detection, sanitization, and parameterized query simulation</p>
+    </div>
+
+    <div class="query-layout">
+      <div class="query-left">
+        <div class="panel">
+          <div class="panel-header">
+            <span>SQL Injection Tester</span>
+            <button class="badge-btn" onclick="clearQuery()">CLEAR</button>
+          </div>
+          <textarea id="queryInput" placeholder="Enter a SQL query or inject attempt...
+Example: SELECT * FROM users WHERE id='1' OR '1'='1'"></textarea>
+          <div class="query-btns">
+            <button class="btn-primary small" onclick="analyzeQuery()">
+              <span>🔍 ANALYZE</span>
+            </button>
+            <button class="btn-secondary small" onclick="sanitizeQuery()">
+              <span>🧹 SANITIZE</span>
+            </button>
+            <button class="btn-secondary small" onclick="parameterizeQuery()">
+              <span>⚙️ PARAMETERIZE</span>
+            </button>
+          </div>
+          <div class="quick-payloads">
+            <div class="qp-label">Quick Payloads:</div>
+            <div class="qp-grid">
+              <button class="qp-btn" onclick="loadPayload(0)">OR bypass</button>
+              <button class="qp-btn" onclick="loadPayload(1)">Comment</button>
+              <button class="qp-btn" onclick="loadPayload(2)">UNION Select</button>
+              <button class="qp-btn" onclick="loadPayload(3)">DROP Table</button>
+              <button class="qp-btn" onclick="loadPayload(4)">Blind Time</button>
+              <button class="qp-btn" onclick="loadPayload(5)">Stacked</button>
+              <button class="qp-btn" onclick="loadPayload(6)">Boolean</button>
+              <button class="qp-btn" onclick="loadPayload(7)">Safe Query</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="query-right">
+        <div class="panel">
+          <div class="panel-header"><span>Analysis Results</span></div>
+          <div id="queryResult" class="query-result-area">
+            <div class="placeholder-msg">Run an analysis to see results here...</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header"><span>Parameterized Output</span></div>
+          <div id="paramResult" class="query-result-area mono">
+            <div class="placeholder-msg">Parameterization output appears here...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Token Generator -->
+    <div class="token-section">
+      <div class="panel">
+        <div class="panel-header">
+          <span>🔑 Capability Token Generator</span>
+          <span class="badge green">SECURE ACCESS CONTROL</span>
+        </div>
+        <div class="token-layout">
+          <div class="token-form">
+            <div class="field-group">
+              <label>Subject (User ID)</label>
+              <input type="text" id="tokenSubject" placeholder="user_001" />
+            </div>
+            <div class="field-group">
+              <label>Access Scope</label>
+              <select id="tokenScope">
+                <option value="read">READ — Query only</option>
+                <option value="write">WRITE — Insert/Update</option>
+                <option value="admin">ADMIN — Full access</option>
+                <option value="audit">AUDIT — Logs only</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>Expiry (hours)</label>
+              <input type="number" id="tokenExpiry" value="24" min="1" max="720"/>
+            </div>
+            <button class="btn-primary small" onclick="generateToken()">GENERATE TOKEN</button>
+          </div>
+          <div class="token-output">
+            <div class="to-label">Generated Token:</div>
+            <div id="tokenOutput" class="token-display">—</div>
+            <div id="tokenDetails" class="token-details hidden"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ AUDIT LOGS ══════════════════ -->
+  <section class="tab" id="tab-logs">
+    <div class="section-title">
+      <span class="tag">05</span>
+      <h2>Audit Log</h2>
+      <p>Full event trail of all security actions and threat detections</p>
+    </div>
+
+    <div class="logs-controls">
+      <div class="filter-btns">
+        <button class="filter-btn active" onclick="filterLogs('all')">ALL</button>
+        <button class="filter-btn" onclick="filterLogs('threat')">🚨 THREATS</button>
+        <button class="filter-btn" onclick="filterLogs('auth')">🔐 AUTH</button>
+        <button class="filter-btn" onclick="filterLogs('query')">🗄️ QUERIES</button>
+        <button class="filter-btn" onclick="filterLogs('token')">🔑 TOKENS</button>
+      </div>
+      <button class="btn-secondary small" onclick="clearLogs()">CLEAR LOGS</button>
+    </div>
+
+    <div class="logs-table">
+      <div class="log-header">
+        <span>TIMESTAMP</span>
+        <span>EVENT</span>
+        <span>INPUT SAMPLE</span>
+        <span>STATUS</span>
+        <span>LAYER</span>
+      </div>
+      <div id="logEntries">
+        <div class="log-empty">No events recorded yet. Use the system to generate logs.</div>
+      </div>
+    </div>
+
+    <!-- Simulated DB State -->
+    <div class="db-panel">
+      <div class="panel-header">
+        <span>🗄️ Simulated Secure Database</span>
+        <span class="badge blue">IN-MEMORY / AES-256</span>
+      </div>
+      <div class="db-table-wrap">
+        <table class="db-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Email (Encrypted)</th>
+              <th>Password Hash (AES-256)</th>
+              <th>Created</th>
+              <th>Access Scope</th>
+            </tr>
+          </thead>
+          <tbody id="dbRows">
+            <tr class="empty-row">
+              <td colspan="6">No records yet. Register a user to populate the table.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Alert Toast -->
+<div id="toast" class="toast hidden"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
